@@ -6,7 +6,9 @@ class BaseRunnerInput(BaseModel):
     git_branch_name: str
     script: list[str]
     before_script: list[str] | None = None
-    env: dict[str, str] = {}
+
+    env: dict[str, str | None] = {}
+    """If a variable maps to null, the value in the runner's environment is used."""
 
 
 class RunnerOutput(BaseModel):

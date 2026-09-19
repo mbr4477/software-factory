@@ -1,4 +1,5 @@
 import io
+import os
 import traceback
 
 import fabric
@@ -16,7 +17,6 @@ class SshRunnerInput(BaseRunnerInput):
     workdir: str
     shell: str | None = None
     port: int = 22
-
 
 
 @hatchet.task(
@@ -49,7 +49,7 @@ def ssh_runner(job: SshRunnerInput, ctx: Context) -> RunnerOutput:
                 warn=True,
                 out_stream=out_stream,
                 err_stream=out_stream,
-                env=job.env,
+                env={k: v or os.environ.get(k, "") for k, v in job.env.items()},
             )
             logs = out_stream.getvalue().split("\n")
         success = True

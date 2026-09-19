@@ -1,11 +1,11 @@
 import os
 import tempfile
 
-import docker
 import docker.errors
 from docker.types import Mount
 from hatchet_sdk import Context
 
+import docker
 from software_factory.hatchet_provider import hatchet
 from software_factory.tasks.runner import BaseRunnerInput, RunnerOutput
 
@@ -57,7 +57,9 @@ def container_runner(job: ContainerRunnerInput, ctx: Context) -> RunnerOutput:
                     entrypoint=job.entrypoint,
                     auto_remove=True,
                     mounts=mounts,
-                    environment=job.env,
+                    environment={
+                        k: v or os.environ.get(k, "") for k, v in job.env.items()
+                    },
                     user=job.user,
                 )
                 .decode()
