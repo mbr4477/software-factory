@@ -33,7 +33,7 @@ HATCHET_CLIENT_TOKEN=...
 uv run runner-worker
 ```
 
-### Triggering Runners 
+### Triggering Runners
 
 See the source code for the available fields in runner input objects.
 
@@ -52,4 +52,37 @@ if __name__ == "__main__":
             entrypoint=["sh"],
         ).model_dump(),
     )
+```
+
+## Build a Factory Line
+
+Combine container and SSH runner jobs to build your software factory line.
+Define the inputs and outputs of each black box in the assembly line.
+
+- Do one thing in each task. If you have multiple targets, build them in separate tasks instead of a monolithic build task
+- Just like a bug points to a unit test that wasn't written, unmergeable factory code points to a quality check that wasn't written
+
+```mermaid
+%%{init: { 'theme': 'default', 'themeVariables': { 'fontFamily': 'Arial', 'fontSize': '12px' }}}%%
+flowchart TD
+    classDef agent fill:#D2EED4,stroke:#7DCE82;
+    trigger([Trigger])
+    done([Done])
+    trigger --> plan("<div style='width:100px'>Plan</div>"):::agent
+    plan --> patch("<div style='width:100px'>Patch</div>"):::agent
+    patch --> check("<div style='width:100px'>Check</div>")
+    check --> decide{ }
+    decide -->|fail| patch
+    decide -->|pass| publish("<div style='width:100px'>Publish</div>")
+    publish --> done
+
+
+    subgraph check_detail [Check]
+        direction TD
+        lint("<div style='width:100px'>Lint</div>")
+        lint --> build("<div style='width:100px'>Build</div>")
+        build --> test("<div style='width:100px'>Test</div>")
+    end
+    trigger ~~~~~ check_detail
+    style check rx:5px
 ```
