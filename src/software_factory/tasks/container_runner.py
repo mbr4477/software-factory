@@ -1,7 +1,7 @@
 import os
+import stat
 import tempfile
 
-import docker.errors
 from docker.types import Mount
 from hatchet_sdk import Context
 
@@ -27,46 +27,41 @@ def container_runner(job: ContainerRunnerInput, ctx: Context) -> RunnerOutput:
     client = docker.from_env()
     success = False
     with tempfile.TemporaryDirectory(dir=os.path.expanduser("~")) as tmpdir:
-        try:
-            clone_script = [
-                "#!/bin/sh",
-                "set -e",
-                f"git clone -b {job.git_branch_name} {job.git_repo_url} /code",
-                "cd /code",
-            ]
-            script = clone_script + (job.before_script or []) + job.script
-            script_path = os.path.join(tmpdir, "script.sh")
-            with open(script_path, "w") as script_file:
-                script_file.write("\n".join(script))
-                script_file.write("\n")
+        clone_script = [
+            "#!/bin/sh",
+            "set -e",
+            f"git clone -b {job.git_branch_name} {job.git_repo_url} /code",
+            "cd /code",
+        ]
+        script = clone_script + (job.before_script or []) + job.script
+        script_path = os.path.join(tmpdir, "script.sh")
+        with open(script_path, "w") as script_file:
+            script_file.write("\n".join(script))
+            script_file.write("\n")
+        os.chmod(script_path, stat.S_IRWXU | stat.S_IRWXO | stat.S_IRWXG)
 
-            mounts = [
-                Mount("/tmp/script.sh", script_path, type="bind", read_only=True),
-                Mount(
-                    "/root/.ssh",
-                    os.path.join(os.path.expanduser("~"), ".ssh"),
-                    type="bind",
-                    read_only=True,
-                ),
-            ]
-            logs = (
-                client.containers.run(
-                    job.image,
-                    command=["/tmp/script.sh"],
-                    stdout=True,
-                    stderr=True,
-                    entrypoint=job.entrypoint,
-                    auto_remove=True,
-                    mounts=mounts,
-                    environment={
-                        k: v or os.environ.get(k, "") for k, v in job.env.items()
-                    },
-                    user=job.user,
-                )
-                .decode()
-                .split("\n")
-            )
-            success = True
-        except docker.errors.ContainerError as e:
-            logs = e.container.logs().decode().split("\n")
+        mounts = [
+            Mount("/tmp/script.sh", script_path, type="bind", read_only=True),
+            Mount(
+                "/root/.ssh",
+                os.path.join(os.path.expanduser("~"), ".ssh"),
+                type="bind",
+                read_only=True,
+            ),
+        ]
+        container = client.containers.run(
+            job.image,
+            command=["/tmp/script.sh"],
+            stdout=True,
+            stderr=True,
+            entrypoint=job.entrypoint,
+            mounts=mounts,
+            environment={k: v or os.environ.get(k, "") for k, v in job.env.items()},
+            user=job.user,
+            detach=True,
+        )
+        result = container.wait()
+        success = result["StatusCode"] == 0
+        logs = container.logs().decode().split("\n")
+        container.remove()
     return RunnerOutput(success=success, logs=[line for line in logs if line])
