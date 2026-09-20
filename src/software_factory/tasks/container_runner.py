@@ -30,6 +30,7 @@ def container_runner(job: ContainerRunnerInput, ctx: Context) -> RunnerOutput:
         try:
             clone_script = [
                 "#!/bin/sh",
+                "set -e",
                 f"git clone -b {job.git_branch_name} {job.git_repo_url} /code",
                 "cd /code",
             ]
@@ -68,4 +69,4 @@ def container_runner(job: ContainerRunnerInput, ctx: Context) -> RunnerOutput:
             success = True
         except docker.errors.ContainerError as e:
             logs = e.container.logs().decode().split("\n")
-    return RunnerOutput(success=success, logs=logs)
+    return RunnerOutput(success=success, logs=[line for line in logs if line])

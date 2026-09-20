@@ -37,7 +37,7 @@ def ssh_runner(job: SshRunnerInput, ctx: Context) -> RunnerOutput:
     with fabric.Connection(job.host, job.user, job.port, forward_agent=True) as conn:
         try:
             out_stream = io.StringIO()
-            _ = conn.run(
+            result = conn.run(
                 " && ".join(script),
                 shell=job.shell or "/bin/bash",
                 warn=True,
@@ -47,10 +47,10 @@ def ssh_runner(job: SshRunnerInput, ctx: Context) -> RunnerOutput:
                 replace_env=True,
             )
             logs = out_stream.getvalue().split("\n")
-            success = True
+            success = result.exited == 0
         except Exception as e:  # noqa: BLE001
             traceback.print_tb(e.__traceback__)
             print(str(e))
         finally:
             _ = conn.run(f"rm -rf {job.workdir}/code", warn=True)
-    return RunnerOutput(success=success, logs=logs)
+    return RunnerOutput(success=success, logs=[line for line in logs if line])
