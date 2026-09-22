@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class BaseRunnerInput(BaseModel):
+class BaseRepoTaskInput(BaseModel):
     git_repo_url: str
     git_branch_name: str
     script: list[str]
@@ -11,6 +11,6 @@ class BaseRunnerInput(BaseModel):
     """If a variable maps to null, the value in the runner's environment is used."""
 
 
-class RunnerOutput(BaseModel):
+class RepoTaskOutput(BaseModel):
     success: bool
     logs: list[str]
