@@ -4,6 +4,7 @@ import tempfile
 
 from docker.types import Mount
 from hatchet_sdk import Context
+from pydantic import BaseModel
 
 import docker
 from software_factory.hatchet_provider import hatchet
@@ -12,10 +13,16 @@ from software_factory.tasks.repo_task import BaseRepoTaskInput, RepoTaskOutput
 CONTAINER_REPO_TASK_EVENT_KEY = "container-repo-task"
 
 
+class Volume(BaseModel):
+    name: str
+    mount_point: str
+
+
 class ContainerRepoTaskInput(BaseRepoTaskInput):
     image: str
     entrypoint: list[str] | None = None
     user: str | None = None
+    volumes: list[Volume] | None = None
 
 
 class ContainerRepoTask:
@@ -48,8 +55,13 @@ class ContainerRepoTask:
                     type="bind",
                 ),
             ]
+            if job.volumes:
+                for v in job.volumes:
+                    mounts.append(Mount(v.mount_point, v.name, type="volume"))
+
             env = {"SSH_AUTH_SOCK": "/ssh-agent"}
             env.update({k: v or os.environ.get(k, "") for k, v in job.env.items()})
+
             container = client.containers.run(
                 job.image,
                 command=["/tmp/script.sh"],
