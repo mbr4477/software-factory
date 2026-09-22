@@ -3,6 +3,7 @@ from .container_repo_task import (
     CONTAINER_REPO_TASK_EVENT_KEY,
     ContainerRepoTask,
     ContainerRepoTaskInput,
+    Volume,
     container_repo_task,
 )
 from .ssh_repo_task import (

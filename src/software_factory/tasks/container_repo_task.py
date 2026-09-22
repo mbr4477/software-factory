@@ -77,7 +77,8 @@ class ContainerRepoTask:
             success = result["StatusCode"] == 0
             logs = container.logs().decode().split("\n")
             container.remove()
-        return RepoTaskOutput(success=success, logs=[line for line in logs if line])
+
+        return RepoTaskOutput(success=success, logs=logs)
 
 
 @hatchet.task(

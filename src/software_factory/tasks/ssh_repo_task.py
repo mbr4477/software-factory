@@ -51,7 +51,7 @@ class SshRepoTask:
                 print(str(e))
             finally:
                 _ = conn.run(f"rm -rf {job.workdir}/code", warn=True)
-        return RepoTaskOutput(success=success, logs=[line for line in logs if line])
+        return RepoTaskOutput(success=success, logs=logs)
 
 
 @hatchet.task(
