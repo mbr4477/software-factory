@@ -1,43 +1,31 @@
 import os
 import stat
 import tempfile
+from datetime import timedelta
 
 from docker.types import Mount
 from hatchet_sdk import Context
-from pydantic import BaseModel
 
 import docker
 from software_factory.hatchet_provider import hatchet
-from software_factory.tasks.repo_task import BaseRepoTaskInput, RepoTaskOutput
+from software_factory.pipeline import ContainerJob, Result
 
-CONTAINER_REPO_TASK_EVENT_KEY = "container-repo-task"
-
-
-class Volume(BaseModel):
-    name: str
-    mount_point: str
+CONTAINER_JOB_TASK_EVENT_KEY = "container-job-task"
 
 
-class ContainerRepoTaskInput(BaseRepoTaskInput):
-    image: str
-    entrypoint: list[str] | None = None
-    user: str | None = None
-    volumes: list[Volume] | None = None
-
-
-class ContainerRepoTask:
-    def run(self, job: ContainerRepoTaskInput) -> RepoTaskOutput:
+class ContainerJobTask:
+    def run(self, job: ContainerJob) -> Result:
         client = docker.from_env()
-        success = False
+        status_code = -1
         with tempfile.TemporaryDirectory(dir=os.path.expanduser("~")) as tmpdir:
             clone_script = [
                 "#!/bin/sh",
                 "set -e",
                 'export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"',
-                f"git clone -b {job.git_branch_name} {job.git_repo_url} /code",
+                f"git clone -b {job.branch_name} {job.git_url} /code",
                 "cd /code",
             ]
-            script = clone_script + (job.before_script or []) + job.script
+            script = clone_script + job.script
             script_path = os.path.join(tmpdir, "script.sh")
             with open(script_path, "w") as script_file:
                 script_file.write("\n".join(script))
@@ -55,12 +43,11 @@ class ContainerRepoTask:
                     type="bind",
                 ),
             ]
-            if job.volumes:
-                for v in job.volumes:
-                    mounts.append(Mount(v.mount_point, v.name, type="volume"))
 
             env = {"SSH_AUTH_SOCK": "/ssh-agent"}
-            env.update({k: v or os.environ.get(k, "") for k, v in job.env.items()})
+            env.update(
+                {k: v or os.environ.get(k, "") for k, v in job.variables.items()}
+            )
 
             container = client.containers.run(
                 job.image,
@@ -70,21 +57,21 @@ class ContainerRepoTask:
                 entrypoint=job.entrypoint,
                 mounts=mounts,
                 environment=env,
-                user=job.user,
                 detach=True,
             )
             result = container.wait()
-            success = result["StatusCode"] == 0
+            status_code = result["StatusCode"]
             logs = container.logs().decode().split("\n")
             container.remove()
 
-        return RepoTaskOutput(success=success, logs=logs)
+        return Result(exit_code=status_code, logs=logs)
 
 
 @hatchet.task(
-    name="container-repo-task",
-    on_events=[CONTAINER_REPO_TASK_EVENT_KEY],
-    input_validator=ContainerRepoTaskInput,
+    name="container-job-task",
+    on_events=[CONTAINER_JOB_TASK_EVENT_KEY],
+    input_validator=ContainerJob,
+    execution_timeout=timedelta(hours=1),
 )
-def container_repo_task(input_: ContainerRepoTaskInput, ctx: Context) -> RepoTaskOutput:
-    return ContainerRepoTask().run(input_)
+def container_job_task(input_: ContainerJob, ctx: Context) -> Result:
+    return ContainerJobTask().run(input_)
