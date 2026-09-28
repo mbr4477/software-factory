@@ -9,7 +9,9 @@ from software_factory.pipeline import (
     RemoteSshJob,
     Result,
 )
-from software_factory.tasks import container_job_task, remote_ssh_job_task
+
+from ._container_job_task import container_job_task
+from ._remote_ssh_job_task import remote_ssh_job_task
 
 PIPELINE_TASK_EVENT_KEY = "pipeline-task"
 

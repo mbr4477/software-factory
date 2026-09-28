@@ -15,7 +15,10 @@ dependencies = [
 
 [project.scripts]
 pipeline-worker = "software_factory.pipeline_worker:main"
-trigger-pipeline = "software_factory.trigger:main"
+container-worker = "software_factory.container_worker:main"
+remote-ssh-worker = "software_factory.remote_ssh_worker:main"
+worker = "software_factory.worker:main"
+trigger = "software_factory.trigger:main"
 
 [build-system]
 requires = ["uv_build>=0.9.22,<0.10.0"]

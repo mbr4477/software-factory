@@ -43,7 +43,7 @@
     "remote-ssh-job": {
       "$ref": "#/$defs/job",
       "properties": {
-        "type": { "const": "ssh" },
+        "type": { "const": "remote_ssh" },
         "hostname": { "type": "string" },
         "user": { "type": "string" },
         "working_dir": { "type": "string" },

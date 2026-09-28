@@ -1,10 +1,7 @@
 from .hatchet_provider import hatchet
-from .tasks import container_job_task, pipeline_task, remote_ssh_job_task
+from .tasks import pipeline_task
 
 
 def main():
-    worker = hatchet.worker(
-        name="pipeline-task",
-        workflows=[pipeline_task, container_job_task, remote_ssh_job_task],
-    )
+    worker = hatchet.worker(name="pipeline-worker", workflows=[pipeline_task])
     worker.start()

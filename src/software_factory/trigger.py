@@ -5,7 +5,8 @@ import yaml
 from .hatchet_provider import hatchet
 from .pipeline import pipeline_from_dict
 
-if __name__ == "__main__":
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("pipeline_def", type=str, help="path to pipeline yaml file")
     args = parser.parse_args()
