@@ -7,8 +7,9 @@ from docker.types import Mount
 from hatchet_sdk import Context
 
 import docker
-from software_factory.hatchet_provider import hatchet
-from software_factory.pipeline import ContainerJob, Result
+
+from ..hatchet_provider import hatchet
+from ..job import ContainerJob, Result
 
 CONTAINER_JOB_TASK_EVENT_KEY = "container-job-task"
 

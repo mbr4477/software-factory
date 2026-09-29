@@ -6,8 +6,8 @@ from datetime import timedelta
 import fabric
 from hatchet_sdk import Context
 
-from software_factory.hatchet_provider import hatchet
-from software_factory.pipeline import RemoteSshJob, Result
+from ..hatchet_provider import hatchet
+from ..job import RemoteSshJob, Result
 
 REMOTE_SSH_JOB_EVENT_KEY = "remote-ssh-job-task"
 

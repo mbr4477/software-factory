@@ -1,6 +1,6 @@
 from typing import Literal
 
-from .base_job import BaseJob
+from ._base_job import BaseJob
 
 
 class ContainerJob(BaseJob):

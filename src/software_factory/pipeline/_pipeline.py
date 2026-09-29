@@ -1,7 +1,6 @@
 from pydantic import BaseModel, model_validator
 
-from .container_job import ContainerJob
-from .remote_ssh_job import RemoteSshJob
+from ..job import ContainerJob, RemoteSshJob
 
 JSONValue = dict[str, "JSONValue"] | list["JSONValue"] | str | int | float | bool | None
 
@@ -26,11 +25,6 @@ class Pipeline(BaseModel):
             "max_backtracks": data["max_backtracks"],
             "jobs": jobs,
         }
-
-
-class Result(BaseModel):
-    exit_code: int
-    logs: list[str] | None = None
 
 
 def pipeline_from_dict(content: dict[str, JSONValue]) -> Pipeline:

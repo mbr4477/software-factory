@@ -1,13 +1,15 @@
 from hatchet_sdk import DurableContext
 
-from software_factory.hatchet_provider import hatchet
-from software_factory.pipeline import (
+from ..hatchet_provider import hatchet
+from ..job import (
     ContainerJob,
+    RemoteSshJob,
+    Result,
+)
+from ..pipeline import (
     JobEngine,
     Pipeline,
     PipelineExecutor,
-    RemoteSshJob,
-    Result,
 )
 
 from ._container_job_task import container_job_task

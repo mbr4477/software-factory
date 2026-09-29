@@ -1,7 +1,7 @@
 import asyncio
 
-from .job_engine import JobEngine
-from .pipeline_models import Pipeline
+from ._job_engine import JobEngine
+from ._pipeline import Pipeline
 
 
 class PipelineExecutor:

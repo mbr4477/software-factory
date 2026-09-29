@@ -1,6 +1,4 @@
-from .container_job import ContainerJob
-from .pipeline_models import Result
-from .remote_ssh_job import RemoteSshJob
+from ..job import ContainerJob, RemoteSshJob, Result
 
 
 class JobEngine:
