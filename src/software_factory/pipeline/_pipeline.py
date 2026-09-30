@@ -1,14 +1,43 @@
-from pydantic import BaseModel, model_validator
+from typing import Literal
 
-from ..job import ContainerJob, RemoteSshJob
+from pydantic import BaseModel, model_validator
 
 JSONValue = dict[str, "JSONValue"] | list["JSONValue"] | str | int | float | bool | None
 
 
-class Pipeline(BaseModel):
+class ArtifactsDef(BaseModel):
+    paths: list[str]
+
+
+class BaseJobDef(BaseModel):
+    name: str
+    stage: str
+    git_url: str
+    script: list[str]
+    branch_name: str = "main"
+    on_fail: str | None = None
+    variables: dict[str, str] = {}
+    artifacts: ArtifactsDef | None = None
+
+
+class ContainerJobDef(BaseJobDef):
+    type: Literal["container"]
+    image: str
+    entrypoint: list[str] | None = None
+
+
+class RemoteSshJobDef(BaseJobDef):
+    type: Literal["remote_ssh"]
+    hostname: str
+    user: str
+    working_dir: str
+    port: int = 22
+
+
+class PipelineDef(BaseModel):
     stages: list[str]
     max_backtracks: int
-    jobs: dict[str, ContainerJob | RemoteSshJob] = {}
+    jobs: dict[str, ContainerJobDef | RemoteSshJobDef] = {}
 
     @model_validator(mode="before")
     @classmethod
@@ -27,5 +56,5 @@ class Pipeline(BaseModel):
         }
 
 
-def pipeline_from_dict(content: dict[str, JSONValue]) -> Pipeline:
-    return Pipeline.model_validate(content)
+def pipeline_def_from_dict(content: dict[str, JSONValue]) -> PipelineDef:
+    return PipelineDef.model_validate(content)

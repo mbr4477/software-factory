@@ -3,7 +3,7 @@ import argparse
 import yaml
 
 from .hatchet_provider import hatchet
-from .pipeline import pipeline_from_dict
+from .pipeline import pipeline_def_from_dict
 
 
 def main():
@@ -14,6 +14,6 @@ def main():
     with open(args.pipeline_def, "r") as pipeline_file:
         pipeline_dict = yaml.safe_load(pipeline_file)
 
-    pipeline = pipeline_from_dict(pipeline_dict)
+    pipeline = pipeline_def_from_dict(pipeline_dict)
 
     hatchet.event.push("pipeline-task", pipeline.model_dump())
