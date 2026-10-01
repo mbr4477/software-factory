@@ -10,6 +10,7 @@ class PipelineExecutor:
         self._engine = engine
 
     async def execute(self, uid: str, pipeline: PipelineDef):
+        counter = 0
         artifacts = {}
         next_stage_idx = 0
         num_stages = len(pipeline.stages)
@@ -25,7 +26,7 @@ class PipelineExecutor:
             for job in stage_jobs.values():
                 if job.type == "container":
                     inputs = ContainerJobInput(
-                        uid=f"{uid}-container-job-{job.name}",
+                        uid=f"{uid}-{job.name}-{counter}",
                         name=job.name,
                         stage=job.stage,
                         git_url=job.git_url,
@@ -44,7 +45,7 @@ class PipelineExecutor:
                     coros.append(self._engine.spawn_container_job(inputs))
                 elif job.type == "remote_ssh":
                     inputs = RemoteSshJobInput(
-                        uid=f"{uid}-remote-ssh-job-{job.name}",
+                        uid=f"{uid}-{job.name}-{counter}",
                         name=job.name,
                         stage=job.stage,
                         git_url=job.git_url,
