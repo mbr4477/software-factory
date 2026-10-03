@@ -20,7 +20,8 @@ The following execution environments are supported:
    ```
 2. Log into Hatchet (http://localhost:8888) and generate a client token. The default credentials are `admin@example.com`/`Admin123!!`
 3. Add the following environment variables wherever you run will run Hatchet workers (more on that below):
-    ```env
+    ```shell
+    # Change the hostname if you are accessing the Hatchet server from another machine on your LAN 
     HATCHET_CLIENT_HOST_PORT=127.0.0.1:7077
     HATCHET_CLIENT_TLS_STRATEGY=none
     HATCHET_CLIENT_TOKEN=<your token here>
