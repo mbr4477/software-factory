@@ -22,11 +22,11 @@ The following execution environments are supported:
 3. Add the following environment variables wherever you run will run Hatchet workers (more on that below):
     ```shell
     # Change the hostname if you are accessing the Hatchet server from another machine on your LAN 
-    HATCHET_CLIENT_HOST_PORT=127.0.0.1:7077
-    HATCHET_CLIENT_TLS_STRATEGY=none
-    HATCHET_CLIENT_TOKEN=<your token here>
-    S3_ACCESS_KEY="rustfsadmin"
-    S3_SECRET_KEY="rustfsadmin"
+    export HATCHET_CLIENT_HOST_PORT=127.0.0.1:7077
+    export HATCHET_CLIENT_TLS_STRATEGY=none
+    export HATCHET_CLIENT_TOKEN=<your token here>
+    export S3_ACCESS_KEY="rustfsadmin"
+    export S3_SECRET_KEY="rustfsadmin"
     ```
 4. Start the Hatchet workers that will pull and run queued jobs:
     ```shell
