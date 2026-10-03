@@ -35,6 +35,7 @@ class RemoteSshJobDef(BaseJobDef):
 class PipelineDef(BaseModel):
     stages: list[str]
     max_backtracks: int
+    variables: dict[str, str] | None = None
     jobs: dict[str, ContainerJobDef | RemoteSshJobDef] = {}
 
     @model_validator(mode="before")
@@ -44,12 +45,13 @@ class PipelineDef(BaseModel):
         jobs = {
             k: {"name": k, **v}
             for k, v in data.items()
-            if k not in ("stages", "max_backtracks", "jobs")
+            if k not in ("stages", "max_backtracks", "jobs", "variables")
         }
         jobs.update(data.get("jobs", {}))
         return {
             "stages": stages,
             "max_backtracks": data["max_backtracks"],
+            "variables": data.get("variables"),
             "jobs": jobs,
         }
 

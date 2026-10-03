@@ -73,6 +73,11 @@
     "max_backtracks": {
       "type": "number",
       "description": "The maximum number of times the pipeline is allowed to reset to an earlier stage. Used to prevent infinite loops."
+    },
+    "variables": {
+      "type": "object",
+      "description": "Extra environment variables provided to all jobs",
+      "additionalProperties": { "type": "string" }
     }
   },
   "required": ["stages", "max_backtracks"]

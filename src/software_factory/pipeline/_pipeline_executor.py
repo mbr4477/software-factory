@@ -24,13 +24,19 @@ class PipelineExecutor:
 
             coros = []
             for job in stage_jobs.values():
+                vars = {}
+                if pipeline.variables:
+                    vars.update(pipeline.variables)
+                if job.variables:
+                    vars.update(job.variables)
+
                 if job.type == "container":
                     inputs = ContainerJobInput(
                         uid=f"{uid}-{job.name}-{counter}",
                         name=job.name,
                         stage=job.stage,
                         script=job.script,
-                        variables=job.variables,
+                        variables=vars if vars else None,
                         artifacts=(
                             Artifacts(paths=job.artifacts.paths)
                             if job.artifacts
@@ -47,7 +53,7 @@ class PipelineExecutor:
                         name=job.name,
                         stage=job.stage,
                         script=job.script,
-                        variables=job.variables,
+                        variables=vars if vars else None,
                         artifacts=(
                             Artifacts(paths=job.artifacts.paths)
                             if job.artifacts
