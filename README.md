@@ -38,8 +38,8 @@ The following execution environments are supported:
     uv run container-worker
     uv run remote-ssh-worker
     ```
-    > [!note]
-    > If you have an SSH agent running on your host (`SSH_AUTH_SOCKET` defined in the environment), container and remote SSH jobs will attempt to forward this agent to the execution environment.
+> [!note]
+> If you have an SSH agent running on your host (`SSH_AUTH_SOCKET` defined in the environment), container and remote SSH jobs will attempt to forward this agent to the execution environment.
 5. Trigger a pipeline:
    ```shell
    uv run trigger my_pipeline.yaml
