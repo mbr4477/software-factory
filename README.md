@@ -19,6 +19,8 @@ The following execution environments are supported:
    docker compose up -d
    ```
 2. Log into Hatchet (http://localhost:8888) and generate a client token. The default credentials are `admin@example.com`/`Admin123!!`
+> [!warning]
+> Change `localhost` in compose.yaml for Hatchet if planning to access Hatchet under a different hostname
 3. Add the following environment variables wherever you run will run Hatchet workers (more on that below):
     ```shell
     # Change the hostname if you are accessing the Hatchet server from another machine on your LAN 
@@ -44,11 +46,10 @@ The following execution environments are supported:
    ```shell
    uv run trigger my_pipeline.yaml
    ```
+> [!warning]
+> Images for container jobs must be pulled and available locally before use. Container jobs will not automatically download images not found locally.
 6. Artifacts can be viewed and downloaded from https://localhost:9001 (credentials: `rustfsadmin`/`rustfsadmin`). Job artifacts are *not* automatically removed on any schedule. A custom schedule can be configured in RustFS or artifacts manually cleaned when necessary.
 
 ## Pipeline YAML 
 
 See [schema/pipeline.schema.json](schema/pipeline.schema.json) for the pipeline YAML schema.
-
-
-
