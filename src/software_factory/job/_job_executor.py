@@ -36,12 +36,14 @@ class JobExecutor:
                         files.append(p)
                 for f in files:
                     local_path = os.path.join(tmpdir, os.path.basename(f))
-                    self._runtime.get_file(f, local_path)
-                    key = f"{job.uid}/{f}"
-                    print(key, local_path)
-                    self._artifact_store.put_object(key, local_path)
-                    out_artifacts[key] = f
-                    os.remove(local_path)
+                    try:
+                        self._runtime.get_file(f, local_path)
+                        key = f"{job.uid}/{f}"
+                        self._artifact_store.put_object(key, local_path)
+                        out_artifacts[key] = f
+                        os.remove(local_path)
+                    except FileNotFoundError:
+                        pass
 
         return Result(
             exit_code=result.exit_code, logs=log_lines, artifacts=out_artifacts
