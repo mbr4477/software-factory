@@ -1,88 +1,53 @@
 # Software Factory
 
-## Hatchet
+A tool for running pipelines of jobs in different execution environments.
+Pipelines are *not* DAGs and can loop back to previous stages if a job fails.
+The following execution environments are supported:
+- **Containers.** Run job scripts in containers.
+- **Remote SSH.** Run job scripts on remote SSH hosts.
 
-```
-docker compose up -d
-```
+## Tech Stack
 
-**Username:** `admin@example.com`
+- **[Hatchet.](https://hatchet.run)** Job orchestration and durability.
+- **[RustFS.](https://rustfs.com)** S3 storage for job artifacts.
+- **Docker** (or other compatible container runtime). Container-based job execution.
 
-**Password:** `Admin123!!`
+## Getting Started
 
+1. Start compose to spin up Hatchet (job orchestration) and RustFS (S3 storage for job artifacts):
+   ```shell
+   docker compose up -d
+   ```
+2. Log into Hatchet (http://localhost:8888) and generate a client token. The default credentials are `admin@example.com`/`Admin123!!`
+3. Add the following environment variables wherever you run will run Hatchet workers (more on that below):
+    ```env
+    HATCHET_CLIENT_HOST_PORT=127.0.0.1:7077
+    HATCHET_CLIENT_TLS_STRATEGY=none
+    HATCHET_CLIENT_TOKEN=<your token here>
+    S3_ACCESS_KEY="rustfsadmin"
+    S3_SECRET_KEY="rustfsadmin"
+    ```
+4. Start the Hatchet workers that will pull and run queued jobs:
+    ```shell
+    # Run a single worker for all the tasks
+    uv run worker
 
-## Runner Worker
+    # Run each task worker separately, if you need to run them in shells with different environment vars
+    uv run pipeline-worker
+    uv run container-worker
+    uv run remote-ssh-worker
+    ```
+    > [!note]
+    > If you have an SSH agent running on your host (`SSH_AUTH_SOCKET` defined in the environment), container and remote SSH jobs will attempt to forward this agent to the execution environment.
+5. Trigger a pipeline:
+   ```shell
+   uv run trigger my_pipeline.yaml
+   ```
+6. Artifacts can be viewed and downloaded from https://localhost:9001 (credentials: `rustfsadmin`/`rustfsadmin`). Job artifacts are *not* automatically removed on any schedule. A custom schedule can be configured in RustFS or artifacts manually cleaned when necessary.
 
-The runner worker registers Hatchet tasks to run CI-like jobs.
+## Pipeline YAML 
 
-**Tasks:**
-* [`container_runner`](./src/software_factory/tasks/container_runner.py) for `runner:container` events
-* [`ssh_runner`](./src/software_factory/tasks/ssh_runner.py) for `runner:ssh` events
-
-### Environment
-
-```env
-HATCHET_CLIENT_HOST_PORT=127.0.0.1:7077
-HATCHET_CLIENT_TLS_STRATEGY=none
-HATCHET_CLIENT_TOKEN=...
-```
-
-### Usage
-
-```
-uv run runner-worker
-```
-
-### Triggering Runners
-
-See the source code for the available fields in runner input objects.
-
-```python
-from software_factory.hatchet_provider import hatchet
-from software_factory.tasks.container_runner import ContainerRunnerInput
-
-if __name__ == "__main__":
-    hatchet.event.push(
-        "runner:container",
-        ContainerRunnerInput(
-            git_repo_url="git@github.com:mbr4477/software-factory.git",
-            git_branch_name="main",
-            image="alpine/git:latest",
-            script=["git log --oneline --graph"],
-            entrypoint=["sh"],
-        ).model_dump(),
-    )
-```
-
-## Build a Factory Line
-
-Combine container and SSH runner jobs to build your software factory line.
-Define the inputs and outputs of each black box in the assembly line.
-
-- Do one thing in each task. If you have multiple targets, build them in separate tasks instead of a monolithic build task
-- Just like a bug points to a unit test that wasn't written, unmergeable factory code points to a quality check that wasn't written
-
-```mermaid
-%%{init: { 'theme': 'default', 'themeVariables': { 'fontFamily': 'Arial', 'fontSize': '12px' }}}%%
-flowchart TD
-    classDef agent fill:#D2EED4,stroke:#7DCE82;
-    trigger([Trigger])
-    done([Done])
-    trigger --> plan("<div style='width:100px'>Plan</div>"):::agent
-    plan --> patch("<div style='width:100px'>Patch</div>"):::agent
-    patch --> check("<div style='width:100px'>Check</div>")
-    check --> decide{ }
-    decide -->|fail| patch
-    decide -->|pass| publish("<div style='width:100px'>Publish</div>")
-    publish --> done
+See [schema/pipeline.schema.json](schema/pipeline.schema.json) for the pipeline YAML schema.
 
 
-    subgraph check_detail [Check]
-        direction TD
-        lint("<div style='width:100px'>Lint</div>")
-        lint --> build("<div style='width:100px'>Build</div>")
-        build --> test("<div style='width:100px'>Test</div>")
-    end
-    trigger ~~~~~ check_detail
-    style check rx:5px
-```
+
