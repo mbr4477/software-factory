@@ -42,5 +42,23 @@ services:
       SERVER_AUTH_SET_EMAIL_VERIFIED: "t"
       SERVER_INTERNAL_CLIENT_INTERNAL_GRPC_BROADCAST_ADDRESS: localhost:7077
 
+  rustfs:
+    image: rustfs/rustfs:latest
+    command: [ "/data" ]
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    volumes:
+      - rustfs_data:/data
+    environment:
+      RUSTFS_ACCESS_KEY: "rustfsadmin"
+      RUSTFS_SECRET_KEY: "rustfsadmin"
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: true
+      RUSTFS_OBS_LOGGER_LEVEL: error
+      #RUSTFS_OBS_LOG_DIRECTORY: "/var/log/rustfs/"
+
 volumes:
   hatchet_db_data: # Ensures task data stays saved across restarts
+  rustfs_data:

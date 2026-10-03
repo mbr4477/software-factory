@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Schema definition for a software factory pipeline.",
+  "$defs": {
+    "job": {
+      "type": "object",
+      "properties": {
+        "stage": { "type": "string" },
+        "type": { "type": "string" },
+        "script": { "type": "array", "items": { "type": "string" } },
+        "variables": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "artifacts": {
+          "type": "object",
+          "properties": {
+            "paths": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "required": ["paths"]
+        },
+        "on_fail": {
+          "type": "string",
+          "description": "Stage to reset to if this job fails"
+        }
+      },
+      "required": ["type", "script", "stage"]
+    },
+    "container-job": {
+      "$ref": "#/$defs/job",
+      "properties": {
+        "type": { "const": "container" },
+        "image": { "type": "string", "description": "The container image." },
+        "entrypoint": { "type": "array", "items": { "type": "string" } }
+      },
+      "unevaluatedProperties": false
+    },
+    "remote-ssh-job": {
+      "$ref": "#/$defs/job",
+      "properties": {
+        "type": { "const": "remote_ssh" },
+        "hostname": { "type": "string" },
+        "user": { "type": "string" },
+        "working_dir": { "type": "string" },
+        "port": { "type": "number", "default": 22 }
+      },
+      "required": ["hostname", "user", "working_dir"],
+      "unevaluatedProperties": false
+    }
+  },
+  "type": "object",
+  "additionalProperties": {
+    "oneOf": [
+      { "$ref": "#/$defs/container-job" },
+      { "$ref": "#/$defs/remote-ssh-job" }
+    ]
+  },
+  "properties": {
+    "stages": {
+      "type": "array",
+      "items": { "type": "string", "description": "Stage name" }
+    },
+    "max_backtracks": { "type": "number" }
+  },
+  "required": ["stages", "max_backtracks"]
+}

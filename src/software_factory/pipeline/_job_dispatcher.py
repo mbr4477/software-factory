@@ -1,0 +1,6 @@
+from ..job import ContainerJobInput, RemoteSshJobInput, Result
+
+
+class JobDispatcher:
+    async def dispatch_container_job(self, job: ContainerJobInput) -> Result: ...
+    async def dispatch_remote_ssh_job(self, job: RemoteSshJobInput) -> Result: ...
