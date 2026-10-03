@@ -7,8 +7,6 @@
       "properties": {
         "stage": { "type": "string" },
         "type": { "type": "string" },
-        "git_url": { "type": "string" },
-        "branch_name": { "type": "string", "default": "main" },
         "script": { "type": "array", "items": { "type": "string" } },
         "variables": {
           "type": "object",
@@ -29,7 +27,7 @@
           "description": "Stage to reset to if this job fails"
         }
       },
-      "required": ["type", "git_url", "script", "stage"]
+      "required": ["type", "script", "stage"]
     },
     "container-job": {
       "$ref": "#/$defs/job",

@@ -12,9 +12,7 @@ class ArtifactsDef(BaseModel):
 class BaseJobDef(BaseModel):
     name: str
     stage: str
-    git_url: str
     script: list[str]
-    branch_name: str = "main"
     on_fail: str | None = None
     variables: dict[str, str] = {}
     artifacts: ArtifactsDef | None = None

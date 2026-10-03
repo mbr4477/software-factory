@@ -4,7 +4,8 @@ from hatchet_sdk import Context
 
 from ..artifacts import S3ArtifactStore
 from ..hatchet_provider import hatchet
-from ..job import ContainerJob, ContainerJobInput, Result
+from ..job import ContainerJobInput, JobExecutor, Result
+from ..job_runtime import DockerRuntime
 
 CONTAINER_JOB_TASK_EVENT_KEY = "container-job-task"
 
@@ -18,4 +19,10 @@ CONTAINER_JOB_TASK_EVENT_KEY = "container-job-task"
 def container_job_task(input_: ContainerJobInput, ctx: Context) -> Result:
     store = S3ArtifactStore.from_env()
     store.create_bucket_if_not_exists()
-    return ContainerJob(store).run(input_)
+    with DockerRuntime(
+        input_.image,
+        "/root",
+        input_.entrypoint,
+        command=["-c", "mkfifo /tmp/f; read < /tmp/f"],
+    ) as runtime:
+        return JobExecutor(runtime, store).run(input_)

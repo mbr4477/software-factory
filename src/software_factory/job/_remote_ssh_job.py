@@ -25,11 +25,7 @@ class RemoteSshJob:
         exit_code = -1
         out_artifacts = None
         code_dir = f"{job.working_dir}/code"
-        clone_script = [
-            f"rm -rf {code_dir}",
-            f"git clone -b {job.branch_name} {job.git_url} {code_dir}",
-            f"cd {code_dir}",
-        ]
+        clone_script = [f"cd {code_dir}"]
 
         logs = []
         with fabric.Connection(
@@ -42,9 +38,14 @@ class RemoteSshJob:
                     warn=True,
                     out_stream=out_stream,
                     err_stream=out_stream,
-                    env={
-                        k: v or os.environ.get(k, "") for k, v in job.variables.items()
-                    },
+                    env=(
+                        {
+                            k: v or os.environ.get(k, "")
+                            for k, v in job.variables.items()
+                        }
+                        if job.variables is not None
+                        else None
+                    ),
                     replace_env=True,
                 )
                 if result.exited != 0:
@@ -69,9 +70,14 @@ class RemoteSshJob:
                     warn=True,
                     out_stream=out_stream,
                     err_stream=out_stream,
-                    env={
-                        k: v or os.environ.get(k, "") for k, v in job.variables.items()
-                    },
+                    env=(
+                        {
+                            k: v or os.environ.get(k, "")
+                            for k, v in job.variables.items()
+                        }
+                        if job.variables is not None
+                        else None
+                    ),
                     replace_env=True,
                 )
                 logs = out_stream.getvalue().split("\n")

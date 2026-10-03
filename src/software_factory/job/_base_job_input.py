@@ -9,9 +9,7 @@ class BaseJobInput(BaseModel):
     uid: str
     name: str
     stage: str
-    git_url: str
     script: list[str]
-    branch_name: str = "main"
-    variables: dict[str, str] = {}
+    variables: dict[str, str] | None = None
     artifacts: Artifacts | None = None
     load_artifacts: dict[str, str] | None = None

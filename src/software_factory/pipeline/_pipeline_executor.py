@@ -29,9 +29,7 @@ class PipelineExecutor:
                         uid=f"{uid}-{job.name}-{counter}",
                         name=job.name,
                         stage=job.stage,
-                        git_url=job.git_url,
                         script=job.script,
-                        branch_name=job.branch_name,
                         variables=job.variables,
                         artifacts=(
                             Artifacts(paths=job.artifacts.paths)
@@ -48,9 +46,7 @@ class PipelineExecutor:
                         uid=f"{uid}-{job.name}-{counter}",
                         name=job.name,
                         stage=job.stage,
-                        git_url=job.git_url,
                         script=job.script,
-                        branch_name=job.branch_name,
                         variables=job.variables,
                         artifacts=(
                             Artifacts(paths=job.artifacts.paths)
