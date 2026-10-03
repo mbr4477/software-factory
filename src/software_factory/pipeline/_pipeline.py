@@ -14,7 +14,7 @@ class BaseJobDef(BaseModel):
     stage: str
     script: list[str]
     on_fail: str | None = None
-    variables: dict[str, str] = {}
+    variables: dict[str, str] | None = None
     artifacts: ArtifactsDef | None = None
 
 

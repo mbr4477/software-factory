@@ -7,7 +7,7 @@ from ..job import (
     Result,
 )
 from ..pipeline import (
-    JobEngine,
+    JobDispatcher,
     PipelineDef,
     PipelineExecutor,
 )
@@ -17,11 +17,11 @@ from ._remote_ssh_job_task import remote_ssh_job_task
 PIPELINE_TASK_EVENT_KEY = "pipeline-task"
 
 
-class HatchetJobEngine(JobEngine):
-    async def spawn_container_job(self, job: ContainerJobInput) -> Result:
+class HatchetJobEngine(JobDispatcher):
+    async def dispatch_container_job(self, job: ContainerJobInput) -> Result:
         return await container_job_task.aio_run(job)
 
-    async def spawn_remote_ssh_job(self, job: RemoteSshJobInput) -> Result:
+    async def dispatch_remote_ssh_job(self, job: RemoteSshJobInput) -> Result:
         return await remote_ssh_job_task.aio_run(job)
 
 

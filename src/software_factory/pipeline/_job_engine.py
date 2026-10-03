@@ -1,6 +1,0 @@
-from ..job import ContainerJobInput, RemoteSshJobInput, Result
-
-
-class JobEngine:
-    async def spawn_container_job(self, job: ContainerJobInput) -> Result: ...
-    async def spawn_remote_ssh_job(self, job: RemoteSshJobInput) -> Result: ...

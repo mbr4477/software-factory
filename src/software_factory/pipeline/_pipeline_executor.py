@@ -1,12 +1,12 @@
 import asyncio
 
 from ..job import Artifacts, ContainerJobInput, RemoteSshJobInput
-from ._job_engine import JobEngine
+from ._job_dispatcher import JobDispatcher
 from ._pipeline import PipelineDef
 
 
 class PipelineExecutor:
-    def __init__(self, engine: JobEngine):
+    def __init__(self, engine: JobDispatcher):
         self._engine = engine
 
     async def execute(self, uid: str, pipeline: PipelineDef):
@@ -38,9 +38,9 @@ class PipelineExecutor:
                         ),
                         image=job.image,
                         entrypoint=job.entrypoint,
-                        load_artifacts=artifacts,
+                        load_artifacts=artifacts or None,
                     )
-                    coros.append(self._engine.spawn_container_job(inputs))
+                    coros.append(self._engine.dispatch_container_job(inputs))
                 elif job.type == "remote_ssh":
                     inputs = RemoteSshJobInput(
                         uid=f"{uid}-{job.name}-{counter}",
@@ -57,9 +57,10 @@ class PipelineExecutor:
                         user=job.user,
                         working_dir=job.working_dir,
                         port=job.port,
-                        load_artifacts=artifacts,
+                        load_artifacts=artifacts or None,
                     )
-                    coros.append(self._engine.spawn_remote_ssh_job(inputs))
+                    coros.append(self._engine.dispatch_remote_ssh_job(inputs))
+                counter += 1
 
             results = zip(await asyncio.gather(*coros), stage_jobs.values())
             backtracking = False

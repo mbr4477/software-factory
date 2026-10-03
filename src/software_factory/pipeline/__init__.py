@@ -1,6 +1,7 @@
 # flake8: noqa: F401
-from ._job_engine import JobEngine
+from ._job_dispatcher import JobDispatcher
 from ._pipeline import (
+    BaseJobDef,
     ContainerJobDef,
     PipelineDef,
     RemoteSshJobDef,
