@@ -3,6 +3,7 @@ import os
 import tarfile
 from typing import Self
 
+from docker.errors import NotFound
 from docker.types import Mount
 
 import docker
@@ -62,7 +63,13 @@ class DockerRuntime(JobRuntime):
         if not self._is_valid_path(remote_source):
             raise InvalidRemotePath()
 
-        bits, _ = self._container.get_archive(f"{self._working_dir}/{remote_source}")
+        try:
+            bits, _ = self._container.get_archive(
+                f"{self._working_dir}/{remote_source}"
+            )
+        except NotFound as e:
+            raise FileNotFoundError(e.explanation)
+
         stream = io.BytesIO(b"".join(bits))
         with tarfile.open(fileobj=stream, mode="r") as tar:
             member = tar.getmembers()[0]
