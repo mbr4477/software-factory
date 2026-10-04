@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from hatchet_sdk import DurableContext
 
 from ..hatchet_provider import hatchet
@@ -14,8 +16,6 @@ from ..pipeline import (
 from ._container_job_task import container_job_task
 from ._remote_ssh_job_task import remote_ssh_job_task
 
-PIPELINE_TASK_EVENT_KEY = "pipeline-task"
-
 
 class HatchetJobEngine(JobDispatcher):
     async def dispatch_container_job(self, job: ContainerJobInput) -> Result:
@@ -28,7 +28,7 @@ class HatchetJobEngine(JobDispatcher):
 @hatchet.durable_task(
     name="pipeline-task",
     input_validator=PipelineDef,
-    on_events=[PIPELINE_TASK_EVENT_KEY],
+    execution_timeout=timedelta(hours=1),
 )
 async def pipeline_task(input_: PipelineDef, ctx: DurableContext):
     await PipelineExecutor(HatchetJobEngine()).execute(ctx.task_run_id, input_)

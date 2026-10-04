@@ -7,12 +7,9 @@ from ..hatchet_provider import hatchet
 from ..job import ContainerJobInput, JobExecutor, Result
 from ..job_runtime import DockerRuntime
 
-CONTAINER_JOB_TASK_EVENT_KEY = "container-job-task"
-
 
 @hatchet.task(
     name="container-job-task",
-    on_events=[CONTAINER_JOB_TASK_EVENT_KEY],
     input_validator=ContainerJobInput,
     execution_timeout=timedelta(hours=1),
 )

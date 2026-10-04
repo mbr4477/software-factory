@@ -7,12 +7,9 @@ from ..hatchet_provider import hatchet
 from ..job import JobExecutor, RemoteSshJobInput, Result
 from ..job_runtime import RemoteSshRuntime
 
-REMOTE_SSH_JOB_EVENT_KEY = "remote-ssh-job-task"
-
 
 @hatchet.task(
     name="remote-ssh-job-task",
-    on_events=[REMOTE_SSH_JOB_EVENT_KEY],
     input_validator=RemoteSshJobInput,
     execution_timeout=timedelta(hours=1),
 )

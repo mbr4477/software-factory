@@ -1,10 +1,4 @@
 # flake8: noqa: F401
-from ._container_job_task import (
-    CONTAINER_JOB_TASK_EVENT_KEY,
-    container_job_task,
-)
-from ._pipeline_task import PIPELINE_TASK_EVENT_KEY, pipeline_task
-from ._remote_ssh_job_task import (
-    REMOTE_SSH_JOB_EVENT_KEY,
-    remote_ssh_job_task,
-)
+from ._container_job_task import container_job_task
+from ._pipeline_task import pipeline_task
+from ._remote_ssh_job_task import remote_ssh_job_task
