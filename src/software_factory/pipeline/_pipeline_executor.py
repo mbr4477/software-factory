@@ -10,13 +10,18 @@ class PipelineExecutor:
         self._engine = engine
 
     async def execute(self, uid: str, pipeline: PipelineDef):
+        failed = False
         counter = 0
         artifacts = {}
         next_stage_idx = 0
         num_stages = len(pipeline.stages)
 
         num_backtracks = 0
-        while next_stage_idx < num_stages and num_backtracks <= pipeline.max_backtracks:
+        while (
+            not failed
+            and next_stage_idx < num_stages
+            and num_backtracks <= pipeline.max_backtracks
+        ):
             stage = pipeline.stages[next_stage_idx]
             stage_jobs = {k: v for k, v in pipeline.jobs.items() if v.stage == stage}
 
@@ -73,15 +78,21 @@ class PipelineExecutor:
             for result, job in results:
                 if result.artifacts:
                     artifacts.update(result.artifacts)
-                if result.exit_code != 0 and job.on_fail:
-                    try:
-                        on_fail_idx = pipeline.stages.index(job.on_fail)
-                        if on_fail_idx < next_stage_idx:
-                            backtracking = True
-                            next_stage_idx = on_fail_idx
-                    except ValueError:
-                        # Ignore unknown stages in on_fail
-                        pass
+                if result.exit_code != 0:
+                    if job.on_fail:
+                        try:
+                            on_fail_idx = pipeline.stages.index(job.on_fail)
+                            if on_fail_idx < next_stage_idx:
+                                backtracking = True
+                                next_stage_idx = on_fail_idx
+                        except ValueError:
+                            # Ignore unknown stages in on_fail
+                            pass
+                    else:
+                        # Nowhere to go but we can't stay here
+                        failed = True
 
             if backtracking:
+                # Reset any failures since we have somewhere to backtrack to
+                failed = False
                 num_backtracks += 1
