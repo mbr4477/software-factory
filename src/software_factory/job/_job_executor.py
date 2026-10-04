@@ -15,7 +15,7 @@ class JobExecutor:
     def run(self, job: BaseJobInput) -> Result:
         if job.load_artifacts:
             with tempfile.TemporaryDirectory() as tmpdir:
-                for object_key, path in job.load_artifacts.items():
+                for path, object_key in job.load_artifacts.items():
                     local_path = os.path.join(tmpdir, os.path.basename(path))
                     self._artifact_store.get_object(object_key, local_path)
                     self._runtime.put_file(local_path, path)
@@ -40,7 +40,7 @@ class JobExecutor:
                         self._runtime.get_file(f, local_path)
                         key = f"{job.uid}/{f}"
                         self._artifact_store.put_object(key, local_path)
-                        out_artifacts[key] = f
+                        out_artifacts[f] = key
                         os.remove(local_path)
                     except FileNotFoundError:
                         pass
