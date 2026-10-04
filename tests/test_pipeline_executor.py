@@ -61,13 +61,50 @@ def test_runs_successful_stages_to_completion():
     uut = PipelineExecutor(dispatcher)
     asyncio.run(uut.execute("abc123", pipeline))
 
-    dispatcher.assert_has_calls(
-        [
-            mock.call.dispatch_container_job(JobInputWithName("scan-job")),
-            mock.call.dispatch_container_job(JobInputWithName("build-job")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job")),
-        ]
+    expected_calls = [
+        mock.call.dispatch_container_job(JobInputWithName("scan-job")),
+        mock.call.dispatch_container_job(JobInputWithName("build-job")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job")),
+    ]
+    dispatcher.assert_has_calls(expected_calls)
+    assert dispatcher.dispatch_container_job.call_count == len(expected_calls)
+
+
+def test_stops_after_nonzero_exit_code_in_stage():
+    pipeline = PipelineDef(
+        max_backtracks=1,
+        stages=["scan", "build", "test"],
+        jobs={
+            "scan-job": SCAN_JOB_DEF,
+            "build-job": BUILD_JOB_DEF,
+            "build-job-2": ContainerJobDef(
+                name="build-job-2",
+                type="container",
+                stage="build",
+                script=["echo 'build'"],
+                image="alpine:latest",
+            ),
+            "test-job": TEST_JOB_DEF,
+        },
     )
+
+    dispatcher = mock.AsyncMock()
+
+    async def dispatch_container_job(job: ContainerJobInput) -> Result:
+        return Result(exit_code=1) if job.name == "build-job-2" else Result(exit_code=0)
+
+    dispatcher.dispatch_container_job.side_effect = dispatch_container_job
+
+    uut = PipelineExecutor(dispatcher)
+    asyncio.run(uut.execute("abc123", pipeline))
+
+    expected_calls = [
+        mock.call.dispatch_container_job(JobInputWithName("scan-job")),
+        mock.call.dispatch_container_job(JobInputWithName("build-job")),
+        mock.call.dispatch_container_job(JobInputWithName("build-job-2")),
+    ]
+    dispatcher.assert_has_calls(expected_calls)
+    assert dispatcher.dispatch_container_job.call_count == len(expected_calls)
 
 
 def test_backtracks_on_failure():
@@ -100,15 +137,15 @@ def test_backtracks_on_failure():
     uut = PipelineExecutor(dispatcher)
     asyncio.run(uut.execute("abc123", pipeline))
 
-    dispatcher.assert_has_calls(
-        [
-            mock.call.dispatch_container_job(JobInputWithName("scan-job")),
-            mock.call.dispatch_container_job(JobInputWithName("build-job")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job")),
-            mock.call.dispatch_container_job(JobInputWithName("build-job")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job")),
-        ]
-    )
+    expected_calls = [
+        mock.call.dispatch_container_job(JobInputWithName("scan-job")),
+        mock.call.dispatch_container_job(JobInputWithName("build-job")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job")),
+        mock.call.dispatch_container_job(JobInputWithName("build-job")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job")),
+    ]
+    dispatcher.assert_has_calls(expected_calls)
+    assert dispatcher.dispatch_container_job.call_count == len(expected_calls)
 
 
 def test_backtracks_to_earliest_stage():
@@ -182,18 +219,18 @@ def test_backtracks_to_earliest_stage():
     uut = PipelineExecutor(dispatcher)
     asyncio.run(uut.execute("abc123", pipeline))
 
-    dispatcher.assert_has_calls(
-        [
-            mock.call.dispatch_container_job(JobInputWithName("scan-job")),
-            mock.call.dispatch_container_job(JobInputWithName("build-job")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job1")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job2")),
-            mock.call.dispatch_container_job(JobInputWithName("scan-job")),
-            mock.call.dispatch_container_job(JobInputWithName("build-job")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job1")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job2")),
-        ]
-    )
+    expected_calls = [
+        mock.call.dispatch_container_job(JobInputWithName("scan-job")),
+        mock.call.dispatch_container_job(JobInputWithName("build-job")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job1")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job2")),
+        mock.call.dispatch_container_job(JobInputWithName("scan-job")),
+        mock.call.dispatch_container_job(JobInputWithName("build-job")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job1")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job2")),
+    ]
+    dispatcher.assert_has_calls(expected_calls)
+    assert dispatcher.dispatch_container_job.call_count == len(expected_calls)
 
 
 def test_limits_backtracks_to_max():
@@ -228,13 +265,13 @@ def test_limits_backtracks_to_max():
     asyncio.run(uut.execute("abc123", pipeline))
 
     # Max backtracks of 2 means all jobs can run up to 3 times
-    dispatcher.assert_has_calls(
-        [
-            mock.call.dispatch_container_job(JobInputWithName("build-job")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job")),
-            mock.call.dispatch_container_job(JobInputWithName("build-job")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job")),
-            mock.call.dispatch_container_job(JobInputWithName("build-job")),
-            mock.call.dispatch_container_job(JobInputWithName("test-job")),
-        ]
-    )
+    expected_calls = [
+        mock.call.dispatch_container_job(JobInputWithName("build-job")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job")),
+        mock.call.dispatch_container_job(JobInputWithName("build-job")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job")),
+        mock.call.dispatch_container_job(JobInputWithName("build-job")),
+        mock.call.dispatch_container_job(JobInputWithName("test-job")),
+    ]
+    dispatcher.assert_has_calls(expected_calls)
+    assert dispatcher.dispatch_container_job.call_count == len(expected_calls)
