@@ -1,0 +1,14 @@
+[Unit]
+Description=Hatchet worker
+After=ssh-agent-system.service
+Requires=ssh-agent-system.service
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/hatchet-worker.env
+Environment=SSH_AUTH_SOCK=/run/ssh-agent-system/agent.socket
+# Update with absolute paths
+# ExecStart=/bin/bash -c "env && cd /path/to/software-factory && /path/to/bin/uv run worker"
+
+[Install]
+WantedBy=default.target

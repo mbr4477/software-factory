@@ -1,0 +1,23 @@
+[Unit]
+Description=System-wide SSH Key Agent
+Documentation=man:ssh-agent(1)
+# Ensure it only starts after the local filesystem and network are ready
+After=local-fs.target network.target
+
+[Service]
+Type=simple
+# RuntimeDirectory automatically creates /run/ssh-agent-system/ on start
+# and cleanly deletes it when the service stops
+RuntimeDirectory=ssh-agent-system
+Environment=SSH_AUTH_SOCK=/run/ssh-agent-system/agent.socket
+
+# Force ssh-agent to run in the foreground (-D) and bind to our fixed system socket
+ExecStart=/usr/bin/ssh-agent -D -a $SSH_AUTH_SOCK
+ExecStartPost=/usr/bin/sleep 1
+ExecStartPost=/usr/bin/ssh-add /path/to/.ssh/id_ed25519
+
+SuccessExitStatus=2
+
+[Install]
+WantedBy=multi-user.target
+
