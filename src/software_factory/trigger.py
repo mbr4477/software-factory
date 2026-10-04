@@ -29,5 +29,5 @@ def main():
                 pipeline.variables[name] = val
             else:
                 pipeline.variables[expr] = os.environ.get(expr, "")
-    print(pipeline)
+
     pipeline_task.run(pipeline)

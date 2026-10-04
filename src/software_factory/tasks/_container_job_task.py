@@ -19,7 +19,7 @@ def container_job_task(input_: ContainerJobInput, ctx: Context) -> Result:
     with DockerRuntime(
         input_.image,
         "/root",
-        input_.entrypoint,
-        command=["-c", "mkfifo /tmp/f; read < /tmp/f"],
+        ["sh"],
+        command=["-c", "tail -f /dev/null"],
     ) as runtime:
         return JobExecutor(runtime, store).run(input_)
