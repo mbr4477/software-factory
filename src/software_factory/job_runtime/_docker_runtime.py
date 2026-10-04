@@ -3,7 +3,7 @@ import os
 import tarfile
 from typing import Self
 
-from docker.errors import NotFound
+from docker.errors import ImageNotFound, NotFound
 from docker.types import Mount
 
 import docker
@@ -26,6 +26,11 @@ class DockerRuntime(JobRuntime):
         self._entrypoint = entrypoint or ["/bin/bash"]
 
         self._client = docker.client.from_env()
+
+        try:
+            self._client.images.get(image)
+        except ImageNotFound:
+            self._client.images.pull(image)
 
         env = {}
         mounts = []
