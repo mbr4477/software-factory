@@ -27,7 +27,7 @@ class DockerRuntime(JobRuntime):
 
         self._client = docker.client.from_env()
 
-        env = {}
+        env = {"GIT_SSH_COMMAND": "ssh -o StrictHostKeyChecking=no"}
         mounts = []
         if "SSH_AUTH_SOCK" in os.environ:
             mounts.append(
